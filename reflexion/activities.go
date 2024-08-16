@@ -9,33 +9,6 @@ import (
 )
 
 func (ra *ReflexionAgent) InitialResponderActivity(ctx context.Context, question string) (AgentResponse, error) {
-    logger := activity.GetLogger(ctx)
-    logger.Info("Starting InitialResponderActivity", "question", question)
-
-    var response AgentResponse
-    for attempt := 0; attempt < 3; attempt++ {
-        _, err := ra.client.CreateChatCompletion(
-            ctx,
-            openai.ChatCompletionRequest{
-                Model: openai.GPT3Dot5Turbo,
-                Messages: []openai.ChatCompletionMessage{
-                    {Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Generate an initial answer, reflection, and search query for the given question."},
-                    {Role: openai.ChatMessageRoleUser, Content: question},
-                },
-            },
-            &response,
-        )
-
-        if err == nil {
-            logger.Info("Completed InitialResponderActivity", "response", response)
-            return response, nil
-        }
-
-        logger.Error("Error in InitialResponderActivity", "error", err, "attempt", attempt)
-    }
-
-    return AgentResponse{}, fmt.Errorf("failed after multiple attempts")
-}
 	logger := activity.GetLogger(ctx)
 	logger.Info("Starting InitialResponderActivity", "question", question)
 
