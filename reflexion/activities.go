@@ -9,55 +9,32 @@ import (
 )
 
 func (ra *ReflexionAgent) InitialResponderActivity(ctx context.Context, question string) (AgentResponse, error) {
-    logger := activity.GetLogger(ctx)
-    logger.Info("Starting InitialResponderActivity", "question", question)
-
-    var response AgentResponse
-    for attempt := 0; attempt < 3; attempt++ {
-        _, err := ra.client.CreateChatCompletion(
-            ctx,
-            openai.ChatCompletionRequest{
-                Model: openai.GPT3Dot5Turbo,
-                Messages: []openai.ChatCompletionMessage{
-                    {Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Generate an initial answer, reflection, and search query for the given question."},
-                    {Role: openai.ChatMessageRoleUser, Content: question},
-                },
-            },
-            &response,
-        )
-
-        if err == nil {
-            logger.Info("Completed InitialResponderActivity", "response", response)
-            return response, nil
-        }
-
-        logger.Error("Error in InitialResponderActivity", "error", err, "attempt", attempt)
-    }
-
-    return AgentResponse{}, fmt.Errorf("failed after multiple attempts")
 	logger := activity.GetLogger(ctx)
 	logger.Info("Starting InitialResponderActivity", "question", question)
 
 	var response AgentResponse
-	_, err := ra.client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Generate an initial answer, reflection, and search query for the given question."},
-				{Role: openai.ChatMessageRoleUser, Content: question},
+	for attempt := 0; attempt < 3; attempt++ {
+		_, err := ra.client.CreateChatCompletion(
+			ctx,
+			openai.ChatCompletionRequest{
+				Model: openai.GPT3Dot5Turbo,
+				Messages: []openai.ChatCompletionMessage{
+					{Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Generate an initial answer, reflection, and search query for the given question."},
+					{Role: openai.ChatMessageRoleUser, Content: question},
+				},
 			},
-		},
-		&response,
-	)
+			&response,
+		)
 
-	if err != nil {
-		logger.Error("Error in InitialResponderActivity", "error", err)
-		return AgentResponse{}, err
+		if err == nil {
+			logger.Info("Completed InitialResponderActivity", "response", response)
+			return response, nil
+		}
+
+		logger.Error("Error in InitialResponderActivity", "error", err, "attempt", attempt)
 	}
 
-	logger.Info("Completed InitialResponderActivity", "response", response)
-	return response, nil
+	return AgentResponse{}, fmt.Errorf("failed after multiple attempts")
 }
 
 func (ra *ReflexionAgent) SearchActivity(ctx context.Context, query string) ([]SearchResult, error) {
@@ -75,61 +52,35 @@ func (ra *ReflexionAgent) SearchActivity(ctx context.Context, query string) ([]S
 }
 
 func (ra *ReflexionAgent) RevisorActivity(ctx context.Context, question string, initialResponse AgentResponse, searchResults []SearchResult) (AgentResponse, error) {
-    logger := activity.GetLogger(ctx)
-    logger.Info("Starting RevisorActivity", "question", question, "initialResponse", initialResponse)
-
-    searchContext := formatSearchResults(searchResults)
-
-    var response AgentResponse
-    for attempt := 0; attempt < 3; attempt++ {
-        _, err := ra.client.CreateChatCompletion(
-            ctx,
-            openai.ChatCompletionRequest{
-                Model: openai.GPT3Dot5Turbo,
-                Messages: []openai.ChatCompletionMessage{
-                    {Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Revise the initial answer based on the search results provided."},
-                    {Role: openai.ChatMessageRoleUser, Content: fmt.Sprintf("Question: %s\nInitial Answer: %s\nInitial Reflection: %s\nSearch Results: %s",
-                        question, initialResponse.Answer, initialResponse.Reflection, searchContext)},
-                },
-            },
-            &response,
-        )
-
-        if err == nil {
-            logger.Info("Completed RevisorActivity", "response", response)
-            return response, nil
-        }
-
-        logger.Error("Error in RevisorActivity", "error", err, "attempt", attempt)
-    }
-
-    return AgentResponse{}, fmt.Errorf("failed after multiple attempts")
 	logger := activity.GetLogger(ctx)
 	logger.Info("Starting RevisorActivity", "question", question, "initialResponse", initialResponse)
 
 	searchContext := formatSearchResults(searchResults)
 
 	var response AgentResponse
-	_, err := ra.client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Revise the initial answer based on the search results provided."},
-				{Role: openai.ChatMessageRoleUser, Content: fmt.Sprintf("Question: %s\nInitial Answer: %s\nInitial Reflection: %s\nSearch Results: %s",
-					question, initialResponse.Answer, initialResponse.Reflection, searchContext)},
+	for attempt := 0; attempt < 3; attempt++ {
+		_, err := ra.client.CreateChatCompletion(
+			ctx,
+			openai.ChatCompletionRequest{
+				Model: openai.GPT3Dot5Turbo,
+				Messages: []openai.ChatCompletionMessage{
+					{Role: openai.ChatMessageRoleSystem, Content: "You are a Reflexion Agent. Revise the initial answer based on the search results provided."},
+					{Role: openai.ChatMessageRoleUser, Content: fmt.Sprintf("Question: %s\nInitial Answer: %s\nInitial Reflection: %s\nSearch Results: %s",
+						question, initialResponse.Answer, initialResponse.Reflection, searchContext)},
+				},
 			},
-		},
-		&response,
-	)
+			&response,
+		)
 
-	if err != nil {
-		logger.Error("Error in RevisorActivity", "error", err)
-		return AgentResponse{}, err
+		if err == nil {
+			logger.Info("Completed RevisorActivity", "response", response)
+			return response, nil
+		}
+
+		logger.Error("Error in RevisorActivity", "error", err, "attempt", attempt)
 	}
 
-	logger.Info("Completed RevisorActivity", "response", response)
-	return response, nil
+	return AgentResponse{}, fmt.Errorf("failed after multiple attempts")
 }
 
 func formatSearchResults(results []SearchResult) string {

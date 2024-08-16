@@ -29,27 +29,6 @@ func NewTracedReflexionAgent(agent *ReflexionAgent, logger log.Logger) *TracedRe
 
 // TracedInitialResponderActivity wraps InitialResponderActivity with tracing
 func (tra *TracedReflexionAgent) TracedInitialResponderActivity(ctx context.Context, question string) (AgentResponse, error) {
-    ctx, span := tra.tracer.Start(ctx, "InitialResponderActivity")
-    defer span.End()
-
-    span.SetAttributes(attribute.String("question", question))
-    tra.logger.Info("Starting InitialResponderActivity", "question", question)
-
-    response, err := tra.ReflexionAgent.InitialResponderActivity(ctx, question)
-    if err != nil {
-        span.RecordError(err)
-        tra.logger.Error("InitialResponderActivity failed", "error", err)
-        return AgentResponse{}, err
-    }
-
-    span.SetAttributes(
-        attribute.String("answer", response.Answer),
-        attribute.String("reflection", response.Reflection),
-        attribute.String("search_query", response.SearchQuery),
-    )
-    tra.logger.Info("InitialResponderActivity completed", "response", response)
-
-    return response, nil
 	ctx, span := tra.tracer.Start(ctx, "InitialResponderActivity")
 	defer span.End()
 
@@ -96,31 +75,6 @@ func (tra *TracedReflexionAgent) TracedSearchActivity(ctx context.Context, query
 
 // TracedRevisorActivity wraps RevisorActivity with tracing
 func (tra *TracedReflexionAgent) TracedRevisorActivity(ctx context.Context, question string, initialResponse AgentResponse, searchResults []SearchResult) (AgentResponse, error) {
-    ctx, span := tra.tracer.Start(ctx, "RevisorActivity")
-    defer span.End()
-
-    span.SetAttributes(
-        attribute.String("question", question),
-        attribute.String("initial_answer", initialResponse.Answer),
-        attribute.Int("search_result_count", len(searchResults)),
-    )
-    tra.logger.Info("Starting RevisorActivity", "question", question, "initial_answer", initialResponse.Answer)
-
-    response, err := tra.ReflexionAgent.RevisorActivity(ctx, question, initialResponse, searchResults)
-    if err != nil {
-        span.RecordError(err)
-        tra.logger.Error("RevisorActivity failed", "error", err)
-        return AgentResponse{}, err
-    }
-
-    span.SetAttributes(
-        attribute.String("revised_answer", response.Answer),
-        attribute.String("revised_reflection", response.Reflection),
-        attribute.String("revised_search_query", response.SearchQuery),
-    )
-    tra.logger.Info("RevisorActivity completed", "response", response)
-
-    return response, nil
 	ctx, span := tra.tracer.Start(ctx, "RevisorActivity")
 	defer span.End()
 
